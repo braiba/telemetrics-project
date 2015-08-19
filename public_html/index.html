@@ -138,7 +138,7 @@
                     .range([height - margins.bottom, margins.bottom])
                     .domain([0, maxSpeed]);
 
-                var xScale = d3.scale.linear()
+                var xScale = d3.time.scale()
                     .range([margins.left, width - margins.right])
                     .domain([minTime, maxTime]);
 
@@ -151,8 +151,7 @@
                     .scale(xScale)
                     .orient('bottom')
                     .tickFormat(
-                        function(timeInMillis) {
-                            var time = new Date(timeInMillis);
+                        function(time) {
                             return time.toLocaleTimeString();
                         }
                     );
@@ -216,7 +215,7 @@
                     .range([height - margins.bottom, margins.bottom])
                     .domain([minAltitude, maxAltitude]);
 
-                var xScale = d3.scale.linear()
+                var xScale = d3.time.scale()
                     .range([margins.left, width - margins.right])
                     .domain([minTime, maxTime]);
 
@@ -229,8 +228,7 @@
                     .scale(xScale)
                     .orient('bottom')
                     .tickFormat(
-                        function(timeInMillis) {
-                            var time = new Date(timeInMillis);
+                        function(time) {
                             return time.toLocaleTimeString();
                         }
                     );
