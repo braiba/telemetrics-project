@@ -7,6 +7,20 @@
         <script src="js/classes/LatLong.js"></script>
         <script src="js/classes/Stats.js"></script>
         <script src="js/libs/d3/d3.js"></script>
+        <style>
+
+            .axis text {
+                font: 10px sans-serif;
+            }
+
+            .axis line,
+            .axis path {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+        </style>
     </head>
     <body>
         <div class="tabBlock">
@@ -36,8 +50,9 @@
              * @param key
              * @param value
              */
-            function addKeyValueRow(table, key, value) {
-                var tr = table.append("tr")
+            function addKeyValueRow(table, key, value)
+            {
+                var tr = table.append("tr");
                 tr.append('th').html(key);
                 tr.append('td').html(value);
             }
@@ -50,7 +65,8 @@
              * @param longitudeB
              * @returns {number}
              */
-            function getDistanceFromLatLonInKm(latitudeA, longitudeA, latitudeB, longitudeB) {
+            function getDistanceFromLatLonInKm(latitudeA, longitudeA, latitudeB, longitudeB)
+            {
                 var radius = 6371; // Radius of the earth in km
 
                 var deltaLatitude  = deg2rad(latitudeB - latitudeA);
@@ -69,7 +85,8 @@
              * @param rad
              * @returns {number}
              */
-            function haversin(rad) {
+            function haversin(rad)
+            {
                 return Math.sin(rad / 2) * Math.sin(rad / 2)
             }
 
@@ -78,7 +95,8 @@
              * @param deg
              * @returns {number}
              */
-            function deg2rad(deg) {
+            function deg2rad(deg)
+            {
                 return deg * (Math.PI/180)
             }
 
@@ -112,8 +130,8 @@
                 var margins = {
                     top    : 25,
                     right  : 25,
-                    bottom : 25,
-                    left   : 60
+                    bottom : 55,
+                    left   : 45
                 };
 
                 var yScale = d3.scale.linear()
@@ -126,11 +144,18 @@
 
                 var yAxis = d3.svg.axis()
                     .scale(yScale)
-                    .orient('left');
+                    .orient('left')
+                    .tickFormat(function(speed) {return speed + ' mph';});
 
                 var xAxis = d3.svg.axis()
-                        .scale(xScale)
-                        .orient('bottom');
+                    .scale(xScale)
+                    .orient('bottom')
+                    .tickFormat(
+                        function(timeInMillis) {
+                            var time = new Date(timeInMillis);
+                            return time.toLocaleTimeString();
+                        }
+                    );
 
                 var line = d3.svg.line()
                     .x(function(row) { return xScale(row.time);})
@@ -143,15 +168,22 @@
                     .attr('stroke-width', 2)
                     .attr('fill', 'none');
 
-                svg.append('g')
-                    .attr('class', 'x axis')
-                    .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
-                    .call(xAxis);
+                svg
+                    .append('g')
+                        .attr('class', 'x axis')
+                        .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
+                        .call(xAxis)
+                    .selectAll('text')
+                        .attr("y", 0)
+                        .attr("x", -9)
+                        .attr("dy", ".40em")
+                        .attr('transform', 'rotate(-90)')
+                        .style("text-anchor", "end");
 
                 svg.append('g')
                     .attr('class', 'y axis')
                     .attr('transform', 'translate(' + (margins.left) + ',0)')
-                    .call(yAxis);
+                    .call(yAxis)
             }
 
             function populateAltitudeGraph(rows)
@@ -176,46 +208,60 @@
                 var margins = {
                     top    : 25,
                     right  : 25,
-                    bottom : 25,
-                    left   : 60
+                    bottom : 55,
+                    left   : 45
                 };
 
                 var yScale = d3.scale.linear()
-                        .range([height - margins.bottom, margins.bottom])
-                        .domain([minAltitude, maxAltitude]);
+                    .range([height - margins.bottom, margins.bottom])
+                    .domain([minAltitude, maxAltitude]);
 
                 var xScale = d3.scale.linear()
-                        .range([margins.left, width - margins.right])
-                        .domain([minTime, maxTime]);
+                    .range([margins.left, width - margins.right])
+                    .domain([minTime, maxTime]);
 
                 var yAxis = d3.svg.axis()
-                        .scale(yScale)
-                        .orient('left');
+                    .scale(yScale)
+                    .orient('left')
+                    .tickFormat(function(altitude) {return altitude + ' m';});
 
                 var xAxis = d3.svg.axis()
-                        .scale(xScale)
-                        .orient('bottom');
+                    .scale(xScale)
+                    .orient('bottom')
+                    .tickFormat(
+                        function(timeInMillis) {
+                            var time = new Date(timeInMillis);
+                            return time.toLocaleTimeString();
+                        }
+                    );
 
                 var line = d3.svg.line()
-                        .x(function(row) { return xScale(row.time);})
-                        .y(function(row) { return yScale(row.altitude);})
-                        .interpolate('linear');
+                    .x(function(row) { return xScale(row.time);})
+                    .y(function(row) { return yScale(row.altitude);})
+                    .interpolate('linear');
 
                 svg.append("path")
-                        .attr("d", line(rows))
-                        .attr('stroke', 'blue')
-                        .attr('stroke-width', 2)
-                        .attr('fill', 'none');
+                    .attr("d", line(rows))
+                    .attr('stroke', 'blue')
+                    .attr('stroke-width', 2)
+                    .attr('fill', 'none');
 
-                svg.append('g')
+                svg
+                    .append('g')
                         .attr('class', 'x axis')
                         .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
-                        .call(xAxis);
+                        .call(xAxis)
+                    .selectAll('text')
+                        .attr("y", 0)
+                        .attr("x", -9)
+                        .attr("dy", ".40em")
+                        .attr('transform', 'rotate(-90)')
+                        .style("text-anchor", "end");
 
                 svg.append('g')
-                        .attr('class', 'y axis')
-                        .attr('transform', 'translate(' + (margins.left) + ',0)')
-                        .call(yAxis);
+                    .attr('class', 'y axis')
+                    .attr('transform', 'translate(' + (margins.left) + ',0)')
+                    .call(yAxis);
             }
 
             function populateRouteGraph(rows)
@@ -229,8 +275,8 @@
                 var margins = {
                     top    : 25,
                     right  : 25,
-                    bottom : 25,
-                    left   : 60
+                    bottom : 70,
+                    left   : 70
                 };
 
                 var innerWidth = width - (margins.left + margins.right);
@@ -265,11 +311,9 @@
                     longitudeBuffer = (adjustedLongitudeRange - longitudeRange) / 2;
                     minLongitude -= longitudeBuffer;
                     maxLongitude += longitudeBuffer;
-                    longitudeDistance = getDistanceFromLatLonInKm(0, minLongitude, 0, maxLongitude);
                 } else if (yScale < xScale) {
-                    var dataHeight  = latitudeDistance / xScale;
-                    dataPadding = (innerHeight - dataHeight) / 2;
-                    latitudeBuffer = dataPadding * xScale;
+                    var adjustedLatitudeRange = latitudeRange * (xScale / yScale);
+                    latitudeBuffer = (adjustedLatitudeRange - latitudeRange) / 2;
                     minLatitude -= latitudeBuffer;
                     maxLatitude += latitudeBuffer;
                 }
@@ -284,11 +328,15 @@
 
                 var yAxis = d3.svg.axis()
                     .scale(yScaleFunc)
-                    .orient('left');
+                    .orient('left')
+                    .ticks(5)
+                    .tickFormat(function(latitude) {return formatLatitude(latitude, true);});
 
                 var xAxis = d3.svg.axis()
                     .scale(xScaleFunc)
-                    .orient('bottom');
+                    .orient('bottom')
+                    .ticks(10)
+                    .tickFormat(function(longitude) {return formatLongitude(longitude, true);});
 
                 var line = d3.svg.line()
                     .x(function(row) { return xScaleFunc(row.longitude);})
@@ -301,10 +349,17 @@
                     .attr('stroke-width', 2)
                     .attr('fill', 'none');
 
-                svg.append('g')
-                    .attr('class', 'x axis')
-                    .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
-                    .call(xAxis);
+                svg
+                    .append('g')
+                        .attr('class', 'x axis')
+                        .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
+                        .call(xAxis)
+                    .selectAll('text')
+                        .attr("y", 0)
+                        .attr("x", -9)
+                        .attr("dy", ".40em")
+                        .attr('transform', 'rotate(-90)')
+                        .style("text-anchor", "end");
 
                 svg.append('g')
                     .attr('class', 'y axis')
