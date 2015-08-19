@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Telemetrics</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/classes/LatLong.js"></script>
+        <script src="js/classes/Stats.js"></script>
+        <script src="js/libs/d3/d3.js"></script>
+    </head>
+    <body>
+        <div class="tabBlock">
+            <div class="tab">
+                <table id="statsTable">
+
+                </table>
+            </div>
+            <div class="tab">
+                <svg id="speedSvg" width="600" height="400">
+                </svg>
+            </div>
+            <div class="tab">
+                <svg id="altitudeSvg" width="600" height="400">
+                </svg>
+            </div>
+            <div class="tab">
+                <svg id="routeSvg" width="600" height="400">
+                </svg>
+            </div>
+        </div>
+
+        <script>
+            /**
+             *
+             * @param table
+             * @param key
+             * @param value
+             */
+            function addKeyValueRow(table, key, value) {
+                var tr = table.append("tr")
+                tr.append('th').html(key);
+                tr.append('td').html(value);
+            }
+
+            /**
+             *
+             * @param latitudeA
+             * @param longitudeA
+             * @param latitudeB
+             * @param longitudeB
+             * @returns {number}
+             */
+            function getDistanceFromLatLonInKm(latitudeA, longitudeA, latitudeB, longitudeB) {
+                var radius = 6371; // Radius of the earth in km
+
+                var deltaLatitude  = deg2rad(latitudeB - latitudeA);
+                var deltaLongitude = deg2rad(longitudeB - longitudeA);
+
+                var h =
+                    haversin(deltaLatitude) +
+                    Math.cos(deg2rad(latitudeA)) * Math.cos(deg2rad(latitudeB)) *
+                    haversin(deltaLongitude);
+
+                return 2 * radius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+            }
+
+            /**
+             *
+             * @param rad
+             * @returns {number}
+             */
+            function haversin(rad) {
+                return Math.sin(rad / 2) * Math.sin(rad / 2)
+            }
+
+            /**
+             *
+             * @param deg
+             * @returns {number}
+             */
+            function deg2rad(deg) {
+                return deg * (Math.PI/180)
+            }
+
+            function populateStatsTable(rows)
+            {
+                var stats = calculateStats(rows);
+
+                var statsTable = d3.select("#statsTable");
+
+                addKeyValueRow(statsTable, 'Distance Travelled', (1000 * stats.distanceTravelled) + ' m');
+                addKeyValueRow(statsTable, 'Fastest Speed', stats.fastestSpeed);
+                addKeyValueRow(statsTable, 'Average Speed', stats.averageSpeed);
+                addKeyValueRow(statsTable, 'Highest Point', stats.highestPoint);
+                addKeyValueRow(statsTable, 'Average Altitude', stats.averageAltitude + ' m');
+                addKeyValueRow(statsTable, 'Central Point', stats.centralPoint);
+            }
+
+            function populateSpeedGraph(rows)
+            {
+                var svg = d3.select("#speedSvg");
+                var g   = svg.append("g");
+
+                var width  = +svg.attr('width');
+                var height = +svg.attr('height');
+
+                var maxSpeed = (1 + 0.10) * d3.max(rows, function(row) {return row.speed;});
+
+                var minTime = d3.min(rows, function(row) {return row.time;});
+                var maxTime = d3.max(rows, function(row) {return row.time;});
+
+                var margins = {
+                    top    : 25,
+                    right  : 25,
+                    bottom : 25,
+                    left   : 60
+                };
+
+                var yScale = d3.scale.linear()
+                    .range([height - margins.bottom, margins.bottom])
+                    .domain([0, maxSpeed]);
+
+                var xScale = d3.scale.linear()
+                    .range([margins.left, width - margins.right])
+                    .domain([minTime, maxTime]);
+
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient('left');
+
+                var xAxis = d3.svg.axis()
+                        .scale(xScale)
+                        .orient('bottom');
+
+                var line = d3.svg.line()
+                    .x(function(row) { return xScale(row.time);})
+                    .y(function(row) { return yScale(row.speed);})
+                    .interpolate('linear');
+
+                svg.append("path")
+                    .attr("d", line(rows))
+                    .attr('stroke', 'blue')
+                    .attr('stroke-width', 2)
+                    .attr('fill', 'none');
+
+                svg.append('g')
+                    .attr('class', 'x axis')
+                    .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
+                    .call(xAxis);
+
+                svg.append('g')
+                    .attr('class', 'y axis')
+                    .attr('transform', 'translate(' + (margins.left) + ',0)')
+                    .call(yAxis);
+            }
+
+            function populateAltitudeGraph(rows)
+            {
+                var svg = d3.select("#altitudeSvg");
+                var g   = svg.append("g");
+
+                var width  = +svg.attr('width');
+                var height = +svg.attr('height');
+
+                var minAltitude    = d3.min(rows, function(row) {return row.altitude;});
+                var maxAltitude    = d3.max(rows, function(row) {return row.altitude;});
+                var altitudeRange  = (maxAltitude - minAltitude);
+                var altitudeBuffer = 0.10 * altitudeRange;
+
+                minAltitude -= altitudeBuffer;
+                maxAltitude += altitudeBuffer;
+
+                var minTime = d3.min(rows, function(row) {return row.time;});
+                var maxTime = d3.max(rows, function(row) {return row.time;});
+
+                var margins = {
+                    top    : 25,
+                    right  : 25,
+                    bottom : 25,
+                    left   : 60
+                };
+
+                var yScale = d3.scale.linear()
+                        .range([height - margins.bottom, margins.bottom])
+                        .domain([minAltitude, maxAltitude]);
+
+                var xScale = d3.scale.linear()
+                        .range([margins.left, width - margins.right])
+                        .domain([minTime, maxTime]);
+
+                var yAxis = d3.svg.axis()
+                        .scale(yScale)
+                        .orient('left');
+
+                var xAxis = d3.svg.axis()
+                        .scale(xScale)
+                        .orient('bottom');
+
+                var line = d3.svg.line()
+                        .x(function(row) { return xScale(row.time);})
+                        .y(function(row) { return yScale(row.altitude);})
+                        .interpolate('linear');
+
+                svg.append("path")
+                        .attr("d", line(rows))
+                        .attr('stroke', 'blue')
+                        .attr('stroke-width', 2)
+                        .attr('fill', 'none');
+
+                svg.append('g')
+                        .attr('class', 'x axis')
+                        .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
+                        .call(xAxis);
+
+                svg.append('g')
+                        .attr('class', 'y axis')
+                        .attr('transform', 'translate(' + (margins.left) + ',0)')
+                        .call(yAxis);
+            }
+
+            function populateRouteGraph(rows)
+            {
+                var svg = d3.select("#routeSvg");
+                var g   = svg.append("g");
+
+                var width  = +svg.attr('width');
+                var height = +svg.attr('height');
+
+                var margins = {
+                    top    : 25,
+                    right  : 25,
+                    bottom : 25,
+                    left   : 60
+                };
+
+                var innerWidth = width - (margins.left + margins.right);
+                var innerHeight = height - (margins.top + margins.bottom);
+
+                var minLatitude    = d3.min(rows, function(row) {return row.latitude;});
+                var maxLatitude    = d3.max(rows, function(row) {return row.latitude;});
+                var latitudeRange  = (maxLatitude - minLatitude);
+                var latitudeBuffer = 0.10 * latitudeRange;
+
+                minLatitude   -= latitudeBuffer;
+                maxLatitude   += latitudeBuffer;
+                latitudeRange += 2 * latitudeBuffer;
+
+                var minLongitude = d3.min(rows, function(row) {return row.longitude;});
+                var maxLongitude = d3.max(rows, function(row) {return row.longitude;});
+                var longitudeRange  = (maxLongitude - minLongitude);
+                var longitudeBuffer = 0.10 * longitudeRange;
+
+                minLongitude   -= longitudeBuffer;
+                maxLongitude   += longitudeBuffer;
+                longitudeRange += 2 * longitudeBuffer;
+
+                // Adjusts the domain so that the scale is the same on each axis
+                var latitudeDistance  = getDistanceFromLatLonInKm(minLatitude, 0, maxLatitude, 0);
+                var longitudeDistance = getDistanceFromLatLonInKm(0, minLongitude, 0, maxLongitude);
+
+                var yScale = latitudeDistance / innerHeight;
+                var xScale = longitudeDistance / innerWidth;
+                if (xScale < yScale) {
+                    var adjustedLongitudeRange = longitudeRange * (yScale / xScale);
+                    longitudeBuffer = (adjustedLongitudeRange - longitudeRange) / 2;
+                    minLongitude -= longitudeBuffer;
+                    maxLongitude += longitudeBuffer;
+                    longitudeDistance = getDistanceFromLatLonInKm(0, minLongitude, 0, maxLongitude);
+                } else if (yScale < xScale) {
+                    var dataHeight  = latitudeDistance / xScale;
+                    dataPadding = (innerHeight - dataHeight) / 2;
+                    latitudeBuffer = dataPadding * xScale;
+                    minLatitude -= latitudeBuffer;
+                    maxLatitude += latitudeBuffer;
+                }
+
+                var yScaleFunc = d3.scale.linear()
+                    .range([height - margins.bottom, margins.top])
+                    .domain([minLatitude, maxLatitude]);
+
+                var xScaleFunc = d3.scale.linear()
+                    .range([margins.left, width - margins.right])
+                    .domain([minLongitude, maxLongitude]);
+
+                var yAxis = d3.svg.axis()
+                    .scale(yScaleFunc)
+                    .orient('left');
+
+                var xAxis = d3.svg.axis()
+                    .scale(xScaleFunc)
+                    .orient('bottom');
+
+                var line = d3.svg.line()
+                    .x(function(row) { return xScaleFunc(row.longitude);})
+                    .y(function(row) { return yScaleFunc(row.latitude);})
+                    .interpolate('linear');
+
+                svg.append("path")
+                    .attr("d", line(rows))
+                    .attr('stroke', 'blue')
+                    .attr('stroke-width', 2)
+                    .attr('fill', 'none');
+
+                svg.append('g')
+                    .attr('class', 'x axis')
+                    .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
+                    .call(xAxis);
+
+                svg.append('g')
+                    .attr('class', 'y axis')
+                    .attr('transform', 'translate(' + (margins.left) + ',0)')
+                    .call(yAxis);
+            }
+
+            d3.csv(
+                'data/telemetrics.csv',
+                function(row) {
+                    return {
+                        time      : new Date(+row.millis),
+                        latitude  : +row.latitude,
+                        longitude : +row.longitude,
+                        speed     : +row.speed,
+                        altitude  : +row.altitude
+                    };
+                },
+                function (error, rows) {
+                    if (error) throw error;
+
+                    populateStatsTable(rows);
+                    populateSpeedGraph(rows);
+                    populateAltitudeGraph(rows);
+                    populateRouteGraph(rows);
+                }
+            );
+        </script>
+    </body>
+</html>
