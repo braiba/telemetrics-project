@@ -7,6 +7,9 @@
         <script src="js/classes/LatLong.js"></script>
         <script src="js/classes/Stats.js"></script>
         <script src="js/libs/d3/d3.js"></script>
+        <script src="js/libs/floow.js"></script>
+        <script src="js/libs/floow/graph.js"></script>
+        <script src="js/libs/floow/graph/line.js"></script>
         <style>
 
             .axis text {
@@ -116,82 +119,28 @@
 
             function populateSpeedGraph(rows)
             {
-                var svg = d3.select("#speedSvg");
-                var g   = svg.append("g");
-
-                var width  = +svg.attr('width');
-                var height = +svg.attr('height');
-
                 var maxSpeed = (1 + 0.10) * d3.max(rows, function(row) {return row.speed;});
 
                 var minTime = d3.min(rows, function(row) {return row.time;});
                 var maxTime = d3.max(rows, function(row) {return row.time;});
 
-                var margins = {
-                    top    : 25,
-                    right  : 25,
-                    bottom : 55,
-                    left   : 45
-                };
+                var graph = floow.graph.line()
+                    .setSize(600, 400)
+                    .setMargins(25, 25, 55, 45)
+                    .setData(rows)
+                    .setXDomain(minTime, maxTime)
+                    .setYDomain(0, maxSpeed)
+                    .setXFunc(function(row) {return row.time;})
+                    .setYFunc(function(row) {return row.speed;})
+                    .setXTickFormatter(function(time) {return time.toLocaleTimeString();})
+                    .setYTickFormatter(function(speed) {return speed + ' mph';});
 
-                var yScale = d3.scale.linear()
-                    .range([height - margins.bottom, margins.bottom])
-                    .domain([0, maxSpeed]);
-
-                var xScale = d3.time.scale()
-                    .range([margins.left, width - margins.right])
-                    .domain([minTime, maxTime]);
-
-                var yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient('left')
-                    .tickFormat(function(speed) {return speed + ' mph';});
-
-                var xAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .orient('bottom')
-                    .tickFormat(
-                        function(time) {
-                            return time.toLocaleTimeString();
-                        }
-                    );
-
-                var line = d3.svg.line()
-                    .x(function(row) { return xScale(row.time);})
-                    .y(function(row) { return yScale(row.speed);})
-                    .interpolate('linear');
-
-                svg.append("path")
-                    .attr("d", line(rows))
-                    .attr('stroke', 'blue')
-                    .attr('stroke-width', 2)
-                    .attr('fill', 'none');
-
-                svg
-                    .append('g')
-                        .attr('class', 'x axis')
-                        .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
-                        .call(xAxis)
-                    .selectAll('text')
-                        .attr("y", 0)
-                        .attr("x", -9)
-                        .attr("dy", ".40em")
-                        .attr('transform', 'rotate(-90)')
-                        .style("text-anchor", "end");
-
-                svg.append('g')
-                    .attr('class', 'y axis')
-                    .attr('transform', 'translate(' + (margins.left) + ',0)')
-                    .call(yAxis)
+                d3.select("#speedSvg")
+                    .call(graph);
             }
 
             function populateAltitudeGraph(rows)
             {
-                var svg = d3.select("#altitudeSvg");
-                var g   = svg.append("g");
-
-                var width  = +svg.attr('width');
-                var height = +svg.attr('height');
 
                 var minAltitude    = d3.min(rows, function(row) {return row.altitude;});
                 var maxAltitude    = d3.max(rows, function(row) {return row.altitude;});
@@ -204,62 +153,19 @@
                 var minTime = d3.min(rows, function(row) {return row.time;});
                 var maxTime = d3.max(rows, function(row) {return row.time;});
 
-                var margins = {
-                    top    : 25,
-                    right  : 25,
-                    bottom : 55,
-                    left   : 45
-                };
+                var graph = floow.graph.line()
+                    .setSize(600, 400)
+                    .setMargins(25, 25, 55, 45)
+                    .setData(rows)
+                    .setXDomain(minTime, maxTime)
+                    .setYDomain(minAltitude, maxAltitude)
+                    .setXFunc(function(row) {return row.time;})
+                    .setYFunc(function(row) {return row.altitude;})
+                    .setXTickFormatter(function(time) {return time.toLocaleTimeString();})
+                    .setYTickFormatter(function(altitude) {return altitude + ' m';});
 
-                var yScale = d3.scale.linear()
-                    .range([height - margins.bottom, margins.bottom])
-                    .domain([minAltitude, maxAltitude]);
-
-                var xScale = d3.time.scale()
-                    .range([margins.left, width - margins.right])
-                    .domain([minTime, maxTime]);
-
-                var yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient('left')
-                    .tickFormat(function(altitude) {return altitude + ' m';});
-
-                var xAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .orient('bottom')
-                    .tickFormat(
-                        function(time) {
-                            return time.toLocaleTimeString();
-                        }
-                    );
-
-                var line = d3.svg.line()
-                    .x(function(row) { return xScale(row.time);})
-                    .y(function(row) { return yScale(row.altitude);})
-                    .interpolate('linear');
-
-                svg.append("path")
-                    .attr("d", line(rows))
-                    .attr('stroke', 'blue')
-                    .attr('stroke-width', 2)
-                    .attr('fill', 'none');
-
-                svg
-                    .append('g')
-                        .attr('class', 'x axis')
-                        .attr('transform', 'translate(0,' + (height - margins.bottom) + ')')
-                        .call(xAxis)
-                    .selectAll('text')
-                        .attr("y", 0)
-                        .attr("x", -9)
-                        .attr("dy", ".40em")
-                        .attr('transform', 'rotate(-90)')
-                        .style("text-anchor", "end");
-
-                svg.append('g')
-                    .attr('class', 'y axis')
-                    .attr('transform', 'translate(' + (margins.left) + ',0)')
-                    .call(yAxis);
+                d3.select("#altitudeSvg")
+                        .call(graph);
             }
 
             function populateRouteGraph(rows)
