@@ -80,9 +80,13 @@ function formatLatLongCore(value, unicode)
     var seconds = Math.round(value * 10) / 10;
 
     if (unicode) {
-        return degrees + "\u00B0" + this.leftPad(minutes, 2, '0') + "\u2019" + this.leftPad(seconds.toFixed(1), 4, '0') + "\u201D";
+        return degrees + "\u00B0" +
+            this.leftPad(minutes, 2, '0') + "\u2019" +
+            this.leftPad(seconds.toFixed(1), 4, '0') + "\u201D";
     } else {
-        return degrees + "&#0176;" + this.leftPad(minutes, 2, '0') + "&#8217;" + this.leftPad(seconds.toFixed(1), 4, '0') + "&#8221;";
+        return degrees + "&#0176;" +
+            this.leftPad(minutes, 2, '0') + "&#8217;" +
+            this.leftPad(seconds.toFixed(1), 4, '0') + "&#8221;";
     }
 }
 

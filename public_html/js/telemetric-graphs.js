@@ -19,7 +19,7 @@ function calculateStats(rows)
                 totalDistance += getDistanceFromLatLonInKm(prevLatitude, prevLongitude, latitude, longitude);
             }
 
-            if (altitude = maxAltitude) {
+            if (altitude == maxAltitude) {
                 highestPoint.latitude  = latitude;
                 highestPoint.longitude = longitude;
             }
@@ -56,7 +56,7 @@ function generateStatsTable(rows)
     var table = floow.table.keyValue()
         .setData(stats);
 
-    var container = d3.select("#stats")
+    d3.select("#stats")
         .call(table);
 }
 
