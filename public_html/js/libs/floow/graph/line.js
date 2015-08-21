@@ -23,11 +23,11 @@
         var _xTickFormatter = function (value) {return value;};
         var _yTickFormatter = function (value) {return value;};
 
-        function line(svg)
+        function line(container)
         {
             var rows = _data;
 
-            svg
+            var svg = container.append("svg")
                 .attr('width', _width)
                 .attr('height', _height);
 

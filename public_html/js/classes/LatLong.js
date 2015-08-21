@@ -16,18 +16,26 @@ function LatLong(latitude, longitude)
         return '(' + this.getFormattedLatitude() + ', ' + this.getFormattedLongitude() + ')';
     };
 
+    /**
+     * Returns the latitude in the standard display format
+     *
+     * @returns {string}
+     */
     this.getFormattedLatitude = function()
     {
         return formatLatitude(this.latitude, false);
     };
 
+    /**
+     * Returns the latitude in the standard display format
+     *
+     * @returns {string}
+     */
     this.getFormattedLongitude = function()
     {
         return formatLongitude(this.longitude, false);
     };
 }
-
-
 
 /**
  * Formats a number as a longitude value
@@ -94,4 +102,51 @@ function leftPad(input, length, padding)
         output = padding + output;
     }
     return output;
+}
+
+/**
+ * Calculates the distance in km between two points
+ *
+ * @param {number} latitudeA  the latitude of the first point
+ * @param {number} longitudeA the longitude of the first point
+ * @param {number} latitudeB  the latitude of the second point
+ * @param {number} longitudeB the longitude of the second point
+ *
+ * @returns {number} the distance between the two points in km
+ */
+function getDistanceFromLatLonInKm(latitudeA, longitudeA, latitudeB, longitudeB)
+{
+    var radius = 6371; // Radius of the earth in km
+
+    var deltaLatitude  = deg2rad(latitudeB - latitudeA);
+    var deltaLongitude = deg2rad(longitudeB - longitudeA);
+
+    var h =
+        haversin(deltaLatitude) +
+        Math.cos(deg2rad(latitudeA)) * Math.cos(deg2rad(latitudeB)) *
+        haversin(deltaLongitude);
+
+    return 2 * radius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+/**
+ *
+ * @param rad
+ *
+ * @returns {number}
+ */
+function haversin(rad)
+{
+    return Math.sin(rad / 2) * Math.sin(rad / 2)
+}
+
+/**
+ *
+ * @param deg
+ *
+ * @returns {number}
+ */
+function deg2rad(deg)
+{
+    return deg * (Math.PI/180)
 }
