@@ -1,0 +1,3 @@
+!function() {
+    floow.geo = {};
+}();

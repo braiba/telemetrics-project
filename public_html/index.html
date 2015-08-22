@@ -5,13 +5,16 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="js/telemetric-graphs.js"></script>
-        <script src="js/classes/LatLong.js"></script>
         <script src="js/libs/d3/d3.js"></script>
         <script src="js/libs/floow.js"></script>
+        <script src="js/libs/floow/geo.js"></script>
+        <script src="js/libs/floow/geo/latLong.js"></script>
         <script src="js/libs/floow/graph.js"></script>
         <script src="js/libs/floow/graph/line.js"></script>
+        <script src="js/libs/floow/maths.js"></script>
         <script src="js/libs/floow/table.js"></script>
         <script src="js/libs/floow/table/keyValue.js"></script>
+        <script src="js/libs/floow/text.js"></script>
         <link rel="stylesheet" type="text/css" href="css/styles.css">
     </head>
     <body>
@@ -37,10 +40,10 @@
                 function (error, rows) {
                     if (error) throw error;
 
-                    generateStatsTable(rows);
-                    generateSpeedGraph(rows);
-                    generateAltitudeGraph(rows);
-                    generateRouteGraph(rows);
+                    generateStatsTable(d3.select("#stats"), rows);
+                    generateSpeedGraph(d3.select("#speedGraph"), rows);
+                    generateAltitudeGraph(d3.select("#altitudeGraph"), rows);
+                    generateRouteGraph(d3.select("#routeMap"), rows);
                 }
             );
         </script>

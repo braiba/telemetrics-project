@@ -1,3 +1,8 @@
+/**
+ * Calculating the values for the stats tables
+ *
+ * @param {object[]} rows the route data
+ */
 function calculateStats(rows)
 {
     var maxSpeed    = d3.max(rows, function(row) {return row.speed;});
@@ -6,26 +11,24 @@ function calculateStats(rows)
     var avgAltitude = d3.sum(rows, function(row) {return row.altitude;}) / rows.length;
 
     var totalDistance = 0;
-    var highestPoint  = new LatLong(0, 0);
-    var prevLatitude  = undefined;
-    var prevLongitude = undefined;
+    var highestPoint  = undefined;
+    var prevPoint     = undefined;
     rows.forEach(
         function (row) {
             var altitude  = +row.altitude;
             var latitude  = +row.latitude;
             var longitude = +row.longitude;
+            var currPoint = floow.geo.latLong(latitude, longitude);
 
-            if (prevLatitude !== undefined) {
-                totalDistance += getDistanceFromLatLonInKm(prevLatitude, prevLongitude, latitude, longitude);
+            if (prevPoint !== undefined) {
+                totalDistance += currPoint.distanceInKm(prevPoint);
             }
 
             if (altitude == maxAltitude) {
-                highestPoint.latitude  = latitude;
-                highestPoint.longitude = longitude;
+                highestPoint = currPoint;
             }
 
-            prevLatitude  = latitude;
-            prevLongitude = longitude;
+            prevPoint = currPoint;
         }
     );
 
@@ -34,38 +37,52 @@ function calculateStats(rows)
     var minLongitude = d3.min(rows, function(row) {return row.longitude;});
     var maxLongitude = d3.max(rows, function(row) {return row.longitude;});
 
-    var centralPoint      = new LatLong(
+    var centralPoint = floow.geo.latLong(
         (minLatitude + maxLatitude) / 2,
         (minLongitude + maxLongitude) / 2
     );
 
     return {
-        'Distance Travelled': (1000 * totalDistance) + ' m',
+        'Distance Travelled': (1000 * totalDistance).toFixed(1) + ' m',
         'Fastest Speed'     : maxSpeed.toFixed(2) + ' mph',
         'Average Speed'     : avgSpeed.toFixed(2) + ' mph',
-        'Highest Point'     : highestPoint,
+        'Highest Point'     : '' + highestPoint + ' (' + maxAltitude.toFixed(2) + ' m)',
         'Average Altitude'  : avgAltitude.toFixed(2) + ' m',
-        'Central Point'     : centralPoint
+        'Central Point'     : '' + centralPoint
     };
 }
 
-function generateStatsTable(rows)
+/**
+ * Generate the stats table
+ *
+ * @param {object}   container the container DOM object to generate the table into
+ * @param {object[]} rows      the route data
+ */
+function generateStatsTable(container, rows)
 {
     var stats = calculateStats(rows);
 
     var table = floow.table.keyValue()
         .setData(stats);
 
-    d3.select("#stats")
-        .call(table);
+    container.call(table);
 }
 
-function generateSpeedGraph(rows)
+/**
+ * Generate the speed graph
+ *
+ * @param {object}   container the container DOM object to generate the graph into
+ * @param {object[]} rows      the route data
+ */
+function generateSpeedGraph(container, rows)
 {
-    var maxSpeed = (1 + 0.10) * d3.max(rows, function(row) {return row.speed;});
+    var speedFunc = function(row) {return row.speed;};
+    var timeFunc  = function(row) {return row.time;};
 
-    var minTime = d3.min(rows, function(row) {return row.time;});
-    var maxTime = d3.max(rows, function(row) {return row.time;});
+    var maxSpeed = (1 + 0.10) * d3.max(rows, speedFunc);
+
+    var minTime = d3.min(rows, timeFunc);
+    var maxTime = d3.max(rows, timeFunc);
 
     var graph = floow.graph.line()
         .setSize(600, 400)
@@ -73,27 +90,36 @@ function generateSpeedGraph(rows)
         .setData(rows)
         .setXDomain(minTime, maxTime)
         .setYDomain(0, maxSpeed)
-        .setXFunc(function(row) {return row.time;})
-        .setYFunc(function(row) {return row.speed;})
+        .setXFunc(timeFunc)
+        .setYFunc(speedFunc)
         .setXTickFormatter(function(time) {return time.toLocaleTimeString();})
         .setYTickFormatter(function(speed) {return speed + ' mph';});
 
-    d3.select("#speedGraph")
-        .call(graph);
+    container.call(graph);
 }
 
-function generateAltitudeGraph(rows)
+
+/**
+ * Generate the altitude graph
+ *
+ * @param {object}   container the container DOM object to generate the graph into
+ * @param {object[]} rows      the route data
+ */
+function generateAltitudeGraph(container, rows)
 {
-    var minAltitude    = d3.min(rows, function(row) {return row.altitude;});
-    var maxAltitude    = d3.max(rows, function(row) {return row.altitude;});
+    var altitudeFunc = function(row) {return row.altitude;};
+    var timeFunc     = function(row) {return row.time;};
+
+    var minAltitude    = d3.min(rows, altitudeFunc);
+    var maxAltitude    = d3.max(rows, altitudeFunc);
     var altitudeRange  = (maxAltitude - minAltitude);
     var altitudeBuffer = 0.10 * altitudeRange;
 
     minAltitude -= altitudeBuffer;
     maxAltitude += altitudeBuffer;
 
-    var minTime = d3.min(rows, function(row) {return row.time;});
-    var maxTime = d3.max(rows, function(row) {return row.time;});
+    var minTime = d3.min(rows, timeFunc);
+    var maxTime = d3.max(rows, timeFunc);
 
     var graph = floow.graph.line()
         .setSize(600, 400)
@@ -101,18 +127,92 @@ function generateAltitudeGraph(rows)
         .setData(rows)
         .setXDomain(minTime, maxTime)
         .setYDomain(minAltitude, maxAltitude)
-        .setXFunc(function(row) {return row.time;})
-        .setYFunc(function(row) {return row.altitude;})
+        .setXFunc(timeFunc)
+        .setYFunc(altitudeFunc)
         .setXTickFormatter(function(time) {return time.toLocaleTimeString();})
         .setYTickFormatter(function(altitude) {return altitude + ' m';});
 
-    d3.select("#altitudeGraph")
-        .call(graph);
+    container.call(graph);
 }
 
-function generateRouteGraph(rows)
+/**
+ * Calculate the domains to use such that the scale on the x and y axis will be roughly the same in km (they can't be
+ *   completely the same, because the earth is not flat)
+ *
+ * @param {object[]} rows        the row data for the graph
+ * @param {number}   innerWidth  the inner width of the graph in pixels
+ * @param {number}   innerHeight the inner height of the graph in pixels
+ *
+ * @returns {{latitude: {min, max}, longitude: {min, max}}}
+ */
+function calculateRouteDomains(rows, innerWidth, innerHeight)
 {
-    var container = d3.select("#routeMap");
+    var latitudeFunc = function(row) {return row.latitude;};
+    var longitudeFunc = function(row) {return row.longitude;};
+
+    var minLatitude    = d3.min(rows, latitudeFunc);
+    var maxLatitude    = d3.max(rows, latitudeFunc);
+    var avgLatitude    = d3.sum(rows, latitudeFunc) / rows.length;
+    var latitudeRange  = (maxLatitude - minLatitude);
+    var latitudeBuffer = 0.10 * latitudeRange;
+
+    minLatitude   -= latitudeBuffer;
+    maxLatitude   += latitudeBuffer;
+    latitudeRange += 2 * latitudeBuffer;
+
+    var minLongitude = d3.min(rows, longitudeFunc);
+    var maxLongitude = d3.max(rows, longitudeFunc);
+    var avgLongitude = d3.sum(rows, longitudeFunc) / rows.length;
+    var longitudeRange  = (maxLongitude - minLongitude);
+    var longitudeBuffer = 0.10 * longitudeRange;
+
+    minLongitude   -= longitudeBuffer;
+    maxLongitude   += longitudeBuffer;
+    longitudeRange += 2 * longitudeBuffer;
+
+    // Adjusts the domain so that the scale is the same on each axis
+    var bottomCenter   = floow.geo.latLong(minLatitude, avgLongitude);
+    var topCenter      = floow.geo.latLong(maxLatitude, avgLongitude);
+    var middleLeft     = floow.geo.latLong(avgLatitude, minLongitude);
+    var middleRight    = floow.geo.latLong(avgLatitude, maxLongitude);
+
+    var latitudeDistance  = bottomCenter.distanceInKm(topCenter);
+    var longitudeDistance = middleLeft.distanceInKm(middleRight);
+
+    var yScale = latitudeDistance / innerHeight;
+    var xScale = longitudeDistance / innerWidth;
+    if (xScale < yScale) {
+        var adjustedLongitudeRange = longitudeRange * (yScale / xScale);
+        longitudeBuffer = (adjustedLongitudeRange - longitudeRange) / 2;
+        minLongitude -= longitudeBuffer;
+        maxLongitude += longitudeBuffer;
+    } else if (yScale < xScale) {
+        var adjustedLatitudeRange = latitudeRange * (xScale / yScale);
+        latitudeBuffer = (adjustedLatitudeRange - latitudeRange) / 2;
+        minLatitude -= latitudeBuffer;
+        maxLatitude += latitudeBuffer;
+    }
+
+    return {
+        latitude: {
+            min: minLatitude,
+            max: maxLatitude
+        },
+        longitude: {
+            min: minLongitude,
+            max: maxLongitude
+        }
+    };
+}
+
+/**
+ * Generate the route graph
+ *
+ * @param {object}   container the container DOM object to generate the graph into
+ * @param {object[]} rows      the route data
+ */
+function generateRouteGraph(container, rows)
+{
     var svg = container.append("svg")
         .attr('width', 600)
         .attr('height', 400);
@@ -131,61 +231,27 @@ function generateRouteGraph(rows)
     var innerWidth = width - (margins.left + margins.right);
     var innerHeight = height - (margins.top + margins.bottom);
 
-    var minLatitude    = d3.min(rows, function(row) {return row.latitude;});
-    var maxLatitude    = d3.max(rows, function(row) {return row.latitude;});
-    var latitudeRange  = (maxLatitude - minLatitude);
-    var latitudeBuffer = 0.10 * latitudeRange;
-
-    minLatitude   -= latitudeBuffer;
-    maxLatitude   += latitudeBuffer;
-    latitudeRange += 2 * latitudeBuffer;
-
-    var minLongitude = d3.min(rows, function(row) {return row.longitude;});
-    var maxLongitude = d3.max(rows, function(row) {return row.longitude;});
-    var longitudeRange  = (maxLongitude - minLongitude);
-    var longitudeBuffer = 0.10 * longitudeRange;
-
-    minLongitude   -= longitudeBuffer;
-    maxLongitude   += longitudeBuffer;
-    longitudeRange += 2 * longitudeBuffer;
-
-    // Adjusts the domain so that the scale is the same on each axis
-    var latitudeDistance  = getDistanceFromLatLonInKm(minLatitude, 0, maxLatitude, 0);
-    var longitudeDistance = getDistanceFromLatLonInKm(0, minLongitude, 0, maxLongitude);
-
-    var yScale = latitudeDistance / innerHeight;
-    var xScale = longitudeDistance / innerWidth;
-    if (xScale < yScale) {
-        var adjustedLongitudeRange = longitudeRange * (yScale / xScale);
-        longitudeBuffer = (adjustedLongitudeRange - longitudeRange) / 2;
-        minLongitude -= longitudeBuffer;
-        maxLongitude += longitudeBuffer;
-    } else if (yScale < xScale) {
-        var adjustedLatitudeRange = latitudeRange * (xScale / yScale);
-        latitudeBuffer = (adjustedLatitudeRange - latitudeRange) / 2;
-        minLatitude -= latitudeBuffer;
-        maxLatitude += latitudeBuffer;
-    }
+    var domains = calculateRouteDomains(rows, innerWidth, innerHeight);
 
     var yScaleFunc = d3.scale.linear()
         .range([height - margins.bottom, margins.top])
-        .domain([minLatitude, maxLatitude]);
+        .domain([domains.latitude.min, domains.latitude.max]);
 
     var xScaleFunc = d3.scale.linear()
         .range([margins.left, width - margins.right])
-        .domain([minLongitude, maxLongitude]);
+        .domain([domains.longitude.min, domains.longitude.max]);
 
     var yAxis = d3.svg.axis()
         .scale(yScaleFunc)
         .orient('left')
         .ticks(5)
-        .tickFormat(function(latitude) {return formatLatitude(latitude, true);});
+        .tickFormat(function(latitude) {return floow.geo.formatLatitude(latitude, true);});
 
     var xAxis = d3.svg.axis()
         .scale(xScaleFunc)
         .orient('bottom')
         .ticks(10)
-        .tickFormat(function(longitude) {return formatLongitude(longitude, true);});
+        .tickFormat(function(longitude) {return floow.geo.formatLongitude(longitude, true);});
 
     var line = d3.svg.line()
         .x(function(row) { return xScaleFunc(row.longitude);})
