@@ -1,4 +1,9 @@
 !function() {
+    /**
+     * Class for generating line graphs
+     *
+     * @returns {line}
+     */
     floow.graph.line = function()
     {
         var id         = 'line' + Math.random() * 100000;
@@ -26,8 +31,9 @@
         var _horizontalMarks = [];
 
         /**
+         * Callback for creating the line graph
          *
-         * @param {Object} container
+         * @param {Object} container the container to create the graph in
          *
          * @returns {Object}
          */
@@ -126,15 +132,36 @@
             );
         }
 
-        line.setHeight = function(height)
+        /**
+         * Height setter/getter
+         *
+         * @param {number} height the new height (if not specified, this will return the current height)
+         *
+         * @returns {line|number}
+         */
+        line.height = function (height)
         {
+            if (!arguments.length) return _height;
+
             _height = height;
 
             return line;
         };
 
-        line.setMargins = function(top, right, bottom, left)
+        /**
+         * Margins setter/getter
+         *
+         * @param {number} top    the new top margin (if no arguments are given, this will return the current margins)
+         * @param {number} right  the new right margin
+         * @param {number} bottom the new bottom margin
+         * @param {number} left   the new left margin
+         *
+         * @returns {line|object}
+         */
+        line.margins = function (top, right, bottom, left)
         {
+            if (!arguments.length) return _margins;
+
             _margins.top    = top;
             _margins.right  = right;
             _margins.bottom = bottom;
@@ -143,14 +170,31 @@
             return line;
         };
 
-        line.setData = function (data)
+        /**
+         * Data setter/getter
+         *
+         * @param {object[]} data the new data (if not specified, this will return the current data)
+         *
+         * @returns {line|number}
+         */
+        line.data = function (data)
         {
+            if (!arguments.length) return _data;
+
             _data = data;
 
             return line;
         };
 
-        line.setXDomain = function (min, max)
+        /**
+         * Sets the domain for the x-axis
+         *
+         * @param {number} min minimum x value
+         * @param {number} max maximum x value
+         *
+         * @returns {line}
+         */
+        line.xDomain = function (min, max)
         {
             _xDomain.min = min;
             _xDomain.max = max;
@@ -158,7 +202,15 @@
             return line;
         };
 
-        line.setYDomain = function (min, max)
+        /**
+         * Sets the domain for the y-axis
+         *
+         * @param {number} min minimum y value
+         * @param {number} max maximum y value
+         *
+         * @returns {line}
+         */
+        line.yDomain = function (min, max)
         {
             _yDomain.min = min;
             _yDomain.max = max;
@@ -166,35 +218,70 @@
             return line;
         };
 
-        line.setXFunc = function(func)
+        /**
+         * Sets the function for extracting the x axis data from the data array
+         *
+         * @param {Function} func the function for extracting the x value from the data array
+         *
+         * @returns {line}
+         */
+        line.xFunc = function (func)
         {
             _xFunc = func;
 
             return line;
         };
 
-        line.setYFunc = function(func)
+        /**
+         * Sets the function for extracting the y axis data from the data array
+         *
+         * @param {Function} func the function for extracting the y value from the data array
+         *
+         * @returns {line}
+         */
+        line.yFunc = function(func)
         {
             _yFunc = func;
 
             return line;
         };
 
-        line.setXTickFormatter = function(func)
+        /**
+         * Sets the function for formatting x values as tick labels
+         *
+         * @param {Function} func the formatting function
+         *
+         * @returns {line}
+         */
+        line.xTickFormatter = function (func)
         {
             _xTickFormatter = func;
 
             return line;
         };
 
-        line.setYTickFormatter = function(func)
+        /**
+         * Sets the function for formatting y values as tick labels
+         *
+         * @param {Function} func the formatting function
+         *
+         * @returns {line}
+         */
+        line.yTickFormatter = function (func)
         {
             _yTickFormatter = func;
 
             return line;
         };
 
-        line.addHorizontalMark = function(horizontalMark)
+        /**
+         * Adds a horizontal mark to the graph
+         *
+         * @param {horizontalMark} horizontalMark the data object for the mark
+         *
+         * @returns {line}
+         */
+        line.addHorizontalMark = function (horizontalMark)
         {
             _horizontalMarks.push(horizontalMark);
 
@@ -203,4 +290,4 @@
 
         return line;
     }
-}();
+} ();

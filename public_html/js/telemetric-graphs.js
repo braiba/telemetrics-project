@@ -1,28 +1,67 @@
+/**
+ * Gets the maximum speed from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {number}
+ */
 function getMaxSpeed(rows)
 {
     return d3.max(rows, function(row) {return row.speed;});
 }
-
+/**
+ * Gets the average speed from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {number}
+ */
 function getAverageSpeed(rows)
 {
     return d3.sum(rows, function(row) {return row.speed;}) / rows.length;
 }
-
+/**
+ * Gets the minimum altitude from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {number}
+ */
 function getMinAltitude(rows)
 {
     return d3.min(rows, function(row) {return row.altitude;});
 }
-
+/**
+ * Gets the maximum altitude from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {number}
+ */
 function getMaxAltitude(rows)
 {
     return d3.max(rows, function(row) {return row.altitude;});
 }
 
+/**
+ * Gets the average altitude from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {number}
+ */
 function getAverageAltitude(rows)
 {
     return d3.sum(rows, function(row) {return row.altitude;}) / rows.length;
 }
 
+/**
+ * Gets the total distance from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {number}
+ */
 function getTotalDistance(rows)
 {
     var totalDistance = 0;
@@ -45,6 +84,13 @@ function getTotalDistance(rows)
     return totalDistance * 1000;
 }
 
+/**
+ * Gets the highest point from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {latLong}
+ */
 function getHighestPoint(rows)
 {
     var highestPoint = undefined;
@@ -67,6 +113,13 @@ function getHighestPoint(rows)
     return highestPoint;
 }
 
+/**
+ * Gets the central point from telemetrics data
+ *
+ * @param {object[]} rows the telemetrics data
+ *
+ * @return {latLong}
+ */
 function getCentralPoint(rows)
 {
     var minLatitude = d3.min(rows, function(row) {return row.latitude;});
@@ -108,7 +161,7 @@ function generateStatsTable(container, rows)
     var stats = calculateStats(rows);
 
     var table = floow.table.keyValue()
-        .setData(stats);
+        .data(stats);
 
     container.call(table);
 }
@@ -136,21 +189,20 @@ function generateSpeedGraph(container, rows)
         .label('Average Speed: ' + avgSpeed.toFixed(2) + ' kph');
 
     var graph = floow.graph.line()
-        .setHeight(400)
-        .setMargins(5, 5, 55, 45)
-        .setData(rows)
-        .setXDomain(minTime, maxTime)
-        .setYDomain(0, 1.10 * maxSpeed)
-        .setXFunc(timeFunc)
-        .setYFunc(speedFunc)
-        .setXTickFormatter(function(time) {return time.toLocaleTimeString();})
-        .setYTickFormatter(function(speed) {return speed + ' kph';})
+        .height(400)
+        .margins(5, 5, 55, 45)
+        .data(rows)
+        .xDomain(minTime, maxTime)
+        .yDomain(0, 1.10 * maxSpeed)
+        .xFunc(timeFunc)
+        .yFunc(speedFunc)
+        .xTickFormatter(function(time) {return time.toLocaleTimeString();})
+        .yTickFormatter(function(speed) {return speed + ' kph';})
         .addHorizontalMark(maxMark)
         .addHorizontalMark(avgMark);
 
     container.call(graph);
 }
-
 
 /**
  * Generate the altitude graph
@@ -178,15 +230,15 @@ function generateAltitudeGraph(container, rows)
         .label('Average Altitude: ' + avgAltitude.toFixed(2) + ' m');
 
     var graph = floow.graph.line()
-        .setHeight(400)
-        .setMargins(5, 5, 55, 45)
-        .setData(rows)
-        .setXDomain(minTime, maxTime)
-        .setYDomain(minAltitude - altitudeBuffer, maxAltitude + altitudeBuffer)
-        .setXFunc(timeFunc)
-        .setYFunc(altitudeFunc)
-        .setXTickFormatter(function(time) {return time.toLocaleTimeString();})
-        .setYTickFormatter(function(altitude) {return altitude + ' m';})
+        .height(400)
+        .margins(5, 5, 55, 45)
+        .data(rows)
+        .xDomain(minTime, maxTime)
+        .yDomain(minAltitude - altitudeBuffer, maxAltitude + altitudeBuffer)
+        .xFunc(timeFunc)
+        .yFunc(altitudeFunc)
+        .xTickFormatter(function(time) {return time.toLocaleTimeString();})
+        .yTickFormatter(function(altitude) {return altitude + ' m';})
         .addHorizontalMark(maxMark)
         .addHorizontalMark(avgMark);
 
@@ -214,11 +266,11 @@ function generateRouteMap(container, rows)
     var longitudeBuffer = 0.10 * longitudeRange;
 
     var graph = floow.graph.map()
-        .setHeight(400)
-        .setMargins(5, 5, 70, 70)
-        .setData(rows)
-        .setXDomain(minLatitude + latitudeBuffer, maxLatitude + latitudeBuffer)
-        .setYDomain(minLongitude - longitudeBuffer, maxLongitude + longitudeBuffer);
+        .height(400)
+        .margins(5, 5, 70, 70)
+        .data(rows)
+        .xDomain(minLatitude + latitudeBuffer, maxLatitude + latitudeBuffer)
+        .yDomain(minLongitude - longitudeBuffer, maxLongitude + longitudeBuffer);
 
     container.call(graph);
 }

@@ -1,4 +1,9 @@
 !function() {
+    /**
+     * Key-value table generator
+     *
+     * @returns {keyValue}
+     */
     floow.table.keyValue = function()
     {
         var _data = undefined;
@@ -23,8 +28,14 @@
             }
         }
 
-
-        keyValue.setData = function (data)
+        /**
+         * Set the data for the table
+         *
+         * @param {Object} data the data
+         *
+         * @returns {keyValue}
+         */
+        keyValue.data = function (data)
         {
             _data = data;
 

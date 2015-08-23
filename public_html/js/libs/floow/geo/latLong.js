@@ -1,4 +1,12 @@
 !function() {
+    /**
+     * Object for storing latitude and longitude pairs
+     *
+     * @param {number} latitude  the latitude
+     * @param {number} longitude the longitude
+     *
+     * @returns {latLong}
+     */
     floow.geo.latLong = function (latitude, longitude)
     {
         /** @var {number} */
@@ -143,4 +151,3 @@
         }
     };
 } ();
-

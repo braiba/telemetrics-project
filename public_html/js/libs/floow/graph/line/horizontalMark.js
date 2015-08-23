@@ -1,10 +1,18 @@
 !function() {
+    /**
+     * Data object for storing a horizontal line marker on a line graph
+     *
+     * @param value the value to make the mark against
+     *
+     * @returns {horizontalMark}
+     */
     floow.graph.line.horizontalMark = function(value)
     {
         var _value = value;
         var _label = undefined;
 
         /**
+         * Callback for adding the mark to the graph
          *
          * @param {Object}   svg       the svg to add the mark to
          * @param {Function} xScale    the x-scale callback
@@ -37,6 +45,13 @@
             }
         }
 
+        /**
+         * Set the label
+         *
+         * @param {string} label the label
+         *
+         * @returns {horizontalMark}
+         */
         horizontalMark.label = function(label)
         {
             _label = label;

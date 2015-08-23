@@ -1,5 +1,10 @@
-!function() {
-    floow.graph.map = function()
+!function () {
+    /**
+     * Class for generating map charts
+     *
+     * @returns {map}
+     */
+    floow.graph.map = function ()
     {
         var id         = 'line' + Math.random() * 100000;
         var _container = undefined;
@@ -56,16 +61,16 @@
             var yAxis = d3.svg.axis()
                 .scale(yScale)
                 .orient('left')
-                .tickFormat(function(latitude) {return floow.geo.formatLatitude(latitude, true);});
+                .tickFormat(function (latitude) {return floow.geo.formatLatitude(latitude, true);});
 
             var xAxis = d3.svg.axis()
                 .scale(xScale)
                 .orient('bottom')
-                .tickFormat(function(longitude) {return floow.geo.formatLongitude(longitude, true);});
+                .tickFormat(function (longitude) {return floow.geo.formatLongitude(longitude, true);});
 
             var line = d3.svg.line()
-                .x(function(row) { return xScale(row.longitude);})
-                .y(function(row) { return yScale(row.latitude);})
+                .x(function (row) { return xScale(row.longitude);})
+                .y(function (row) { return yScale(row.latitude);})
                 .interpolate('linear');
 
             svg.append("path")
@@ -93,7 +98,7 @@
 
             d3.select(window).on(
                 'resize.' + id,
-                function()
+                function ()
                 {
                     var container = _container;
                     container.selectAll('*').remove();
@@ -114,8 +119,8 @@
          */
         function calculateDomains(rows, innerWidth, innerHeight)
         {
-            var latitudeFunc = function(row) {return row.latitude;};
-            var longitudeFunc = function(row) {return row.longitude;};
+            var latitudeFunc = function (row) {return row.latitude;};
+            var longitudeFunc = function (row) {return row.longitude;};
 
             var minLatitude    = d3.min(rows, latitudeFunc);
             var maxLatitude    = d3.max(rows, latitudeFunc);
@@ -172,14 +177,31 @@
             };
         }
 
-        map.setHeight = function(height)
+        /**
+         * Height setter/getter
+         *
+         * @param {number} height the new height (if not specified, this will return the current height)
+         *
+         * @returns {line|number}
+         */
+        map.height = function (height)
         {
             _height = height;
 
             return map;
         };
 
-        map.setMargins = function(top, right, bottom, left)
+        /**
+         * Margins setter/getter
+         *
+         * @param {number} top    the new top margin (if no arguments are given, this will return the current margins)
+         * @param {number} right  the new right margin
+         * @param {number} bottom the new bottom margin
+         * @param {number} left   the new left margin
+         *
+         * @returns {line|object}
+         */
+        map.margins = function (top, right, bottom, left)
         {
             _margins.top    = top;
             _margins.right  = right;
@@ -189,14 +211,29 @@
             return map;
         };
 
-        map.setData = function (data)
+        /**
+         * Data setter/getter
+         *
+         * @param {object[]} data the new data (if not specified, this will return the current data)
+         *
+         * @returns {line|number}
+         */
+        map.data = function (data)
         {
             _data = data;
 
             return map;
         };
 
-        map.setXDomain = function (min, max)
+        /**
+         * Sets the domain for the x-axis
+         *
+         * @param {number} min minimum x value
+         * @param {number} max maximum x value
+         *
+         * @returns {map}
+         */
+        map.xDomain = function (min, max)
         {
             _xDomain.min = min;
             _xDomain.max = max;
@@ -204,7 +241,15 @@
             return map;
         };
 
-        map.setYDomain = function (min, max)
+        /**
+         * Sets the domain for the y-axis
+         *
+         * @param {number} min minimum y value
+         * @param {number} max maximum y value
+         *
+         * @returns {map}
+         */
+        map.yDomain = function (min, max)
         {
             _yDomain.min = min;
             _yDomain.max = max;
@@ -212,35 +257,42 @@
             return map;
         };
 
-        map.setXFunc = function(func)
+        /**
+         * Sets the function for extracting the x axis data from the data array
+         *
+         * @param {Function} func the function for extracting the x value from the data array
+         *
+         * @returns {map}
+         */
+        map.xFunc = function (func)
         {
             _xFunc = func;
 
             return map;
         };
 
-        map.setYFunc = function(func)
+        /**
+         * Sets the function for extracting the y axis data from the data array
+         *
+         * @param {Function} func the function for extracting the y value from the data array
+         *
+         * @returns {map}
+         */
+        map.yFunc = function (func)
         {
             _yFunc = func;
 
             return map;
         };
 
-        map.setXTickFormatter = function(func)
-        {
-            _xTickFormatter = func;
-
-            return map;
-        };
-
-        map.setYTickFormatter = function(func)
-        {
-            _yTickFormatter = func;
-
-            return map;
-        };
-
-        map.addHorizontalMark = function(horizontalMark)
+        /**
+         * Adds a horizontal mark to the graph
+         *
+         * @param {horizontalMark} horizontalMark the data object for the mark
+         *
+         * @returns {map}
+         */
+        map.addHorizontalMark = function (horizontalMark)
         {
             _horizontalMarks.push(horizontalMark);
 
