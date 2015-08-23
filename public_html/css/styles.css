@@ -10,6 +10,11 @@ body {
     text-align: center;
 }
 
+.header {
+    font-size: 16pt;
+    margin-top: 16px;
+}
+
 .graph path,
 .axis line,
 .marker line {

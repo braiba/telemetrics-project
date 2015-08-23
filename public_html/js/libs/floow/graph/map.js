@@ -6,7 +6,7 @@
      */
     floow.graph.map = function ()
     {
-        var id         = 'line' + Math.random() * 100000;
+        var _id         = 'line' + Math.random() * 100000;
         var _container = undefined;
         var _height    = 400;
         var _margins   = {
@@ -15,6 +15,7 @@
             bottom: 25,
             left: 25
         };
+        var _title   = undefined;
         var _data    = undefined;
         var _xDomain = {
             min: 0,
@@ -39,6 +40,12 @@
 
             var width = parseInt(container.style('width'));
             var rows  = _data;
+
+            if (_title !== undefined) {
+                container.append("div")
+                    .attr('class', 'header')
+                    .html(_title);
+            }
 
             var svg = container.append("svg")
                 .attr('class', 'graph map')
@@ -97,7 +104,7 @@
                 .call(yAxis);
 
             d3.select(window).on(
-                'resize.' + id,
+                'resize.' + _id,
                 function ()
                 {
                     var container = _container;
@@ -207,6 +214,22 @@
             _margins.right  = right;
             _margins.bottom = bottom;
             _margins.left   = left;
+
+            return map;
+        };
+
+        /**
+         * Title setter/getter
+         *
+         * @param {string} title the new title (if not specified, this will return the current title)
+         *
+         * @returns {line|number}
+         */
+        map.title = function (title)
+        {
+            if (!arguments.length) return _data;
+
+            _title = title;
 
             return map;
         };

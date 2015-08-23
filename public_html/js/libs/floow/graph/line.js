@@ -6,7 +6,7 @@
      */
     floow.graph.line = function()
     {
-        var id         = 'line' + Math.random() * 100000;
+        var _id         = 'line' + Math.random() * 100000;
         var _container = undefined;
         var _height    = 400;
         var _margins   = {
@@ -15,6 +15,7 @@
             bottom: 25,
             left: 25
         };
+        var _title   = undefined;
         var _data    = undefined;
         var _xDomain = {
             min: 0,
@@ -43,6 +44,12 @@
 
             var width = parseInt(container.style('width'));
             var rows  = _data;
+
+            if (_title !== undefined) {
+                container.append('div')
+                    .attr('class', 'header')
+                    .html(_title);
+            }
 
             var svg = container.append("svg")
                 .attr('class', 'graph line')
@@ -82,7 +89,7 @@
 
             var pathGroup = svg.append('g');
 
-            var clipPathName = id + 'path';
+            var clipPathName = _id + 'path';
 
             pathGroup
                 .append("clipPath")
@@ -122,7 +129,7 @@
             }
 
             d3.select(window).on(
-                'resize.' + id,
+                'resize.' + _id,
                 function()
                 {
                     var container = _container;
@@ -166,6 +173,22 @@
             _margins.right  = right;
             _margins.bottom = bottom;
             _margins.left   = left;
+
+            return line;
+        };
+
+        /**
+         * Title setter/getter
+         *
+         * @param {string} title the new title (if not specified, this will return the current title)
+         *
+         * @returns {line|number}
+         */
+        line.title = function (title)
+        {
+            if (!arguments.length) return _data;
+
+            _title = title;
 
             return line;
         };
