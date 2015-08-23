@@ -2,15 +2,38 @@ body {
     font-family: sans-serif;
 }
 
-.axis text {
+.graph path,
+.axis line,
+.marker line {
+    fill: none;
+}
+
+.graph path {
+    stroke: blue;
+    stroke-width: 1.5;
+}
+
+.axis path,
+.axis line,
+.marker line {
+    stroke: #000;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.marker line {
+    stroke: blue;
+    stroke-width: 1;
+    stroke-dasharray: 4, 3;
+}
+
+.axis text,
+.marker text{
     font-size: 10px;
 }
 
-.axis line,
-.axis path {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
+.marker text {
+    fill:    blue;
 }
 
 table.keyValue {

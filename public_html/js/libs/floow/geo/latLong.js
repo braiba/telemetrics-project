@@ -19,7 +19,7 @@
          */
         latLong.toString = function()
         {
-            return '(' + latLong.getFormattedLongitude() + ', ' + latLong.getFormattedLatitude() + ')';
+            return '(' + latLong.getFormattedLatitude() + ', ' + latLong.getFormattedLongitude() + ')';
         };
 
         /**

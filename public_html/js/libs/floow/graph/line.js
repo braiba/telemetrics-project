@@ -1,15 +1,15 @@
 !function() {
     floow.graph.line = function()
     {
-        var _width = 600;
-        var _height = 400;
+        var _width   = 600;
+        var _height  = 400;
         var _margins = {
             top: 25,
             right: 25,
             bottom: 25,
             left: 25
         };
-        var _data = undefined;
+        var _data    = undefined;
         var _xDomain = {
             min: 0,
             max: 1
@@ -22,12 +22,20 @@
         var _yFunc = function (row) { return row.y;};
         var _xTickFormatter = function (value) {return value;};
         var _yTickFormatter = function (value) {return value;};
+        var _horizontalMarks = [];
 
+        /**
+         *
+         * @param {Object} container
+         *
+         * @returns {Object}
+         */
         function line(container)
         {
             var rows = _data;
 
             var svg = container.append("svg")
+                .attr('class', 'graph line')
                 .attr('width', _width)
                 .attr('height', _height);
 
@@ -62,12 +70,23 @@
                 )
                 .interpolate('linear');
 
-            svg
+            var pathGroup = svg.append('g');
+
+            var clipPathName = 'clipPath' + Math.random() * 100000;
+
+            pathGroup
+                .append("clipPath")
+                .attr('id', clipPathName)
+                .append("rect")
+                .attr("x", _margins.left)
+                .attr("y", _margins.top)
+                .attr("width", _width - (_margins.right + _margins.left))
+                .attr("height",  _height - (_margins.top + _margins.bottom));
+
+            pathGroup
                 .append("path")
-                .attr("d", svgLine(rows))
-                .attr('stroke', 'blue')
-                .attr('stroke-width', 2)
-                .attr('fill', 'none');
+                .attr('clip-path', 'url(#' + clipPathName + ')')
+                .attr("d", svgLine(rows));
 
             svg
                 .append('g')
@@ -84,7 +103,15 @@
             svg.append('g')
                 .attr('class', 'y axis')
                 .attr('transform', 'translate(' + (_margins.left) + ',0)')
-                .call(yAxis)
+                .call(yAxis);
+
+            var i;
+            for (i in _horizontalMarks) {
+                var horizontalMark = _horizontalMarks[i];
+                svg.call(horizontalMark, xScale, yScale, _xDomain.min, _xDomain.max);
+            }
+
+            return svg;
         }
 
         line.setSize = function(width, height)
@@ -152,6 +179,13 @@
         line.setYTickFormatter = function(func)
         {
             _yTickFormatter = func;
+
+            return line;
+        };
+
+        line.addHorizontalMark = function(horizontalMark)
+        {
+            _horizontalMarks.push(horizontalMark);
 
             return line;
         };
