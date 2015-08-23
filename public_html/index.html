@@ -12,6 +12,7 @@
         <script src="js/libs/floow/graph.js"></script>
         <script src="js/libs/floow/graph/line.js"></script>
         <script src="js/libs/floow/graph/line/horizontalMark.js"></script>
+        <script src="js/libs/floow/graph/map.js"></script>
         <script src="js/libs/floow/table.js"></script>
         <script src="js/libs/floow/table/keyValue.js"></script>
         <script src="js/libs/floow/text.js"></script>
@@ -43,7 +44,7 @@
                     generateStatsTable(d3.select("#stats"), rows);
                     generateSpeedGraph(d3.select("#speedGraph"), rows);
                     generateAltitudeGraph(d3.select("#altitudeGraph"), rows);
-                    generateRouteGraph(d3.select("#routeMap"), rows);
+                    generateRouteMap(d3.select("#routeMap"), rows);
                 }
             );
         </script>
