@@ -136,7 +136,7 @@ function generateSpeedGraph(container, rows)
         .label('Average Speed: ' + avgSpeed.toFixed(2) + ' kph');
 
     var graph = floow.graph.line()
-        .setSize(600, 400)
+        .setHeight(400)
         .setMargins(5, 5, 55, 45)
         .setData(rows)
         .setXDomain(minTime, maxTime)
@@ -178,7 +178,7 @@ function generateAltitudeGraph(container, rows)
         .label('Average Altitude: ' + avgAltitude.toFixed(2) + ' m');
 
     var graph = floow.graph.line()
-        .setSize(600, 400)
+        .setHeight(400)
         .setMargins(5, 5, 55, 45)
         .setData(rows)
         .setXDomain(minTime, maxTime)
@@ -214,7 +214,7 @@ function generateRouteMap(container, rows)
     var longitudeBuffer = 0.10 * longitudeRange;
 
     var graph = floow.graph.map()
-        .setSize(600, 400)
+        .setHeight(400)
         .setMargins(5, 5, 70, 70)
         .setData(rows)
         .setXDomain(minLatitude + latitudeBuffer, maxLatitude + latitudeBuffer)

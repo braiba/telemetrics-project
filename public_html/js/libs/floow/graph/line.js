@@ -1,9 +1,10 @@
 !function() {
     floow.graph.line = function()
     {
-        var _width   = 600;
-        var _height  = 400;
-        var _margins = {
+        var id         = 'line' + Math.random() * 100000;
+        var _container = undefined;
+        var _height    = 400;
+        var _margins   = {
             top: 25,
             right: 25,
             bottom: 25,
@@ -32,11 +33,14 @@
          */
         function line(container)
         {
-            var rows = _data;
+            _container = container;
+
+            var width = parseInt(container.style('width'));
+            var rows  = _data;
 
             var svg = container.append("svg")
                 .attr('class', 'graph line')
-                .attr('width', _width)
+                .attr('width', width)
                 .attr('height', _height);
 
             var yScale = d3.scale.linear()
@@ -44,7 +48,7 @@
                 .domain([_yDomain.min, _yDomain.max]);
 
             var xScale = d3.time.scale()
-                .range([_margins.left, _width - _margins.right])
+                .range([_margins.left, width - _margins.right])
                 .domain([_xDomain.min, _xDomain.max]);
 
             var yAxis = d3.svg.axis()
@@ -72,7 +76,7 @@
 
             var pathGroup = svg.append('g');
 
-            var clipPathName = 'clipPath' + Math.random() * 100000;
+            var clipPathName = id + 'path';
 
             pathGroup
                 .append("clipPath")
@@ -80,7 +84,7 @@
                 .append("rect")
                 .attr("x", _margins.left)
                 .attr("y", _margins.top)
-                .attr("width", _width - (_margins.right + _margins.left))
+                .attr("width", width - (_margins.right + _margins.left))
                 .attr("height",  _height - (_margins.top + _margins.bottom));
 
             pathGroup
@@ -111,12 +115,19 @@
                 svg.call(horizontalMark, xScale, yScale, _xDomain.min, _xDomain.max);
             }
 
-            return svg;
+            d3.select(window).on(
+                'resize.' + id,
+                function()
+                {
+                    var container = _container;
+                    container.selectAll('*').remove();
+                    line(container);
+                }
+            );
         }
 
-        line.setSize = function(width, height)
+        line.setHeight = function(height)
         {
-            _width  = width;
             _height = height;
 
             return line;

@@ -1,9 +1,10 @@
 !function() {
     floow.graph.map = function()
     {
-        var _width   = 600;
-        var _height  = 400;
-        var _margins = {
+        var id         = 'line' + Math.random() * 100000;
+        var _container = undefined;
+        var _height    = 400;
+        var _margins   = {
             top: 25,
             right: 25,
             bottom: 25,
@@ -29,14 +30,17 @@
          */
         function map(container)
         {
-            var rows = _data;
+            _container = container;
+
+            var width = parseInt(container.style('width'));
+            var rows  = _data;
 
             var svg = container.append("svg")
                 .attr('class', 'graph map')
-                .attr('width', _width)
+                .attr('width', width)
                 .attr('height', _height);
 
-            var innerWidth = _width - (_margins.left + _margins.right);
+            var innerWidth = width - (_margins.left + _margins.right);
             var innerHeight = _height - (_margins.top + _margins.bottom);
 
             var domains = calculateDomains(rows, innerWidth, innerHeight);
@@ -46,7 +50,7 @@
                 .domain([domains.latitude.min, domains.latitude.max]);
 
             var xScale = d3.scale.linear()
-                .range([_margins.left, _width - _margins.right])
+                .range([_margins.left, width - _margins.right])
                 .domain([domains.longitude.min, domains.longitude.max]);
 
             var yAxis = d3.svg.axis()
@@ -87,7 +91,15 @@
                 .attr('transform', 'translate(' + (_margins.left) + ',0)')
                 .call(yAxis);
 
-            return svg;
+            d3.select(window).on(
+                'resize.' + id,
+                function()
+                {
+                    var container = _container;
+                    container.selectAll('*').remove();
+                    map(container);
+                }
+            );
         }
 
         /**
@@ -160,9 +172,8 @@
             };
         }
 
-        map.setSize = function(width, height)
+        map.setHeight = function(height)
         {
-            _width  = width;
             _height = height;
 
             return map;
