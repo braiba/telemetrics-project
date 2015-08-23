@@ -40,7 +40,7 @@
                 .attr('height', _height);
 
             var yScale = d3.scale.linear()
-                .range([_height - _margins.bottom, _margins.bottom])
+                .range([_height - _margins.bottom, _margins.top])
                 .domain([_yDomain.min, _yDomain.max]);
 
             var xScale = d3.time.scale()

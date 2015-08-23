@@ -2,6 +2,14 @@ body {
     font-family: sans-serif;
 }
 
+.container {
+    width: 960px;
+    margin: 0 auto;
+}
+.block {
+    text-align: center;
+}
+
 .graph path,
 .axis line,
 .marker line {
@@ -40,6 +48,7 @@ table.keyValue {
     border-collapse: collapse;
     border: solid 1px black;
     white-space: nowrap;
+    display: inline-block;
 }
 
 table.keyValue th {
@@ -50,5 +59,6 @@ table.keyValue th {
 }
 
 table.keyValue td {
+    text-align: left;
     padding: 4px 6px 2px 6px;
 }

@@ -179,7 +179,7 @@ function generateAltitudeGraph(container, rows)
 
     var graph = floow.graph.line()
         .setSize(600, 400)
-        .setMargins(25, 25, 55, 45)
+        .setMargins(5, 5, 55, 45)
         .setData(rows)
         .setXDomain(minTime, maxTime)
         .setYDomain(minAltitude - altitudeBuffer, maxAltitude + altitudeBuffer)
